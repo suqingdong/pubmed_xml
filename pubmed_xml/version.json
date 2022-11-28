@@ -1,6 +1,6 @@
 {
     "prog": "pubmed_xml",
-    "desc": "",
+    "desc": "Pubmed XML Parser",
     "url": "https://github.com/suqingdong/pubmed_xml",
     "author": "suqingdong",
     "author_email": "suqingdong1114@gmail.com",
