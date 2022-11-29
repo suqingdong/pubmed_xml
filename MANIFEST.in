@@ -1,0 +1,2 @@
+include requirements.txt
+include pubmed_xml/version.json

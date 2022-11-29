@@ -1,0 +1,8 @@
+{
+    "prog": "pubmed_xml",
+    "desc": "Pubmed XML Parser",
+    "url": "https://github.com/suqingdong/pubmed_xml",
+    "author": "suqingdong",
+    "author_email": "suqingdong1114@gmail.com",
+    "version": "1.0.0"
+}
