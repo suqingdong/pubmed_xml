@@ -56,8 +56,8 @@ class Pubmed_XML_Parser(object):
                 context['pmid'] = int(MedlineCitation.findtext('PMID'))
                 self.logger.debug('>>> PMID: {}'.format(context['pmid']))
 
-                context['e_issn'] = Article.findtext('Journal/ISSN[@IssnType="Electronic"]')
-                context['issn'] = Article.findtext('Journal/ISSN[@IssnType="Print"]')
+                context['issn'] = Article.findtext('Journal/ISSN')
+                context['issn_type'] = Article.find('Journal/ISSN').attrib['IssnType']
 
                 context['journal'] = Article.findtext('Journal/Title')
                 context['iso_abbr'] = Article.findtext('Journal/ISOAbbreviation')
@@ -115,6 +115,6 @@ class Pubmed_XML_Parser(object):
                 context['pii'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="pii"]')
 
                 ref_list = PubmedArticle.xpath('PubmedData/ReferenceList/Reference/ArticleIdList/ArticleId[@IdType="pubmed"]/text()')
-                context['references'] = list(map(int, ref_list))
+                context['references'] = ','.join(ref_list)
 
                 yield ArticleObject(**context)
