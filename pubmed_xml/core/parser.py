@@ -8,6 +8,7 @@ try:
 except ImportError:
     import xml.etree.cElementTree as ET
 
+import click
 from simple_loggers import SimpleLogger
 
 from pubmed_xml import util
@@ -16,28 +17,38 @@ from pubmed_xml.core.abstract import parse_abstract
 
 
 class Pubmed_XML_Parser(object):
+    """PubMed XML Parser
+    >>> from pubmed_xml import Pubmed_XML_Parser
+    >>> pubmed = Pubmed_XML_Parser()
+    >>> for article in pubmed.parse('30003000'):
+    >>>     print(article)
+    """
 
-    def __init__(self, xml):
-        self.tree = self.get_tree(xml)
+    def __init__(self):
         self.logger = SimpleLogger('Pubmed_XML_Parser')
 
     def get_tree(self, xml):
         if os.path.isfile(xml):
             tree = ET.parse(util.safe_open(xml))
-        elif xml.isdigit():
-            tree = ET.fromstring(util.get_pubmed_xml(xml))
-        else:
+        elif xml.startswith('<?xml '):
             tree = ET.fromstring(xml)
+        else:
+            tree = ET.fromstring(util.get_pubmed_xml(xml))
         return tree
 
-    def parse(self):
+    def parse(self, xml):
         """parse xml from local file or text string
         """
-        if self.tree.find('PubmedArticle') is None:
+        try:
+            tree = self.get_tree(xml)
+        except Exception as e:
+            raise Exception(click.style(f'[XML_PARSE_ERROR] {e}', fg='red'))
+
+        if tree.find('PubmedArticle') is None:
             self.logger.warning('no article found')
             yield None
         else:
-            for PubmedArticle in self.tree.iterfind('PubmedArticle'):
+            for PubmedArticle in tree.iterfind('PubmedArticle'):
                 context = {}
                 MedlineCitation = PubmedArticle.find('MedlineCitation')
                 Article = MedlineCitation.find('Article')
