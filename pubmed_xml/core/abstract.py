@@ -6,6 +6,7 @@ from pubmed_xml import util
 SPECIAL_CHARS = {
     u'\u2009': ' ',
     u'\u202f': ' ',
+    u'\u00a0': ' ',
     u'\u2217': '*',
 }
 
