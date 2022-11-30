@@ -56,6 +56,8 @@ class Pubmed_XML_Parser(object):
                 context['pmid'] = int(MedlineCitation.findtext('PMID'))
                 self.logger.debug('>>> PMID: {}'.format(context['pmid']))
 
+                context['pub_mode'] = Article.attrib['PubModel']
+
                 context['issn'] = Article.findtext('Journal/ISSN')
                 context['issn_type'] = Article.find('Journal/ISSN').attrib['IssnType']
 
@@ -65,20 +67,18 @@ class Pubmed_XML_Parser(object):
                 context['med_abbr'] = MedlineCitation.findtext('MedlineJournalInfo/MedlineTA')
                 context['med_issn'] = MedlineCitation.findtext('MedlineJournalInfo/ISSNLinking')
                 context['nlm_id'] = MedlineCitation.findtext('MedlineJournalInfo/NlmUniqueID')
+                context['country'] = MedlineCitation.findtext('MedlineJournalInfo/Country')
 
-                context['pubdate'] = ' '.join(Article.xpath('Journal/JournalIssue/PubDate/*/text()'))
+                # PubDate vs ArticleDate vs PubMedPubDate?
+                # https://gist.github.com/suqingdong/ad5166618b386627c0fea079215d77bb
 
-                pubmed_pubdate = year = ''
-                for status in ('pubmed', 'entrez', 'medline'):
-                    ymd = PubmedArticle.xpath(f'PubmedData/History/PubMedPubDate[@PubStatus="{status}"]/*/text()')
-                    if ymd:
-                        pubmed_pubdate = datetime.datetime(*map(int, ymd))
-                        year = pubmed_pubdate.year
-                        pubmed_pubdate = pubmed_pubdate.strftime('%Y-%m-%d')
-                        break
-
-                context['year'] = year
-                context['pubmed_pubdate'] = pubmed_pubdate
+                # convert to datetime
+                mdat = util.check_date(PubmedArticle.find('MedlineCitation/DateRevised'))
+                edat = util.check_date(PubmedArticle.find('PubmedData/History/PubMedPubDate[@PubStatus="pubmed"]'))
+                pdat = util.check_date(Article.find('ArticleDate') if Article.find('ArticleDate') is not None else Article.find('Journal/JournalIssue/PubDate'))
+                context['mdat'] = mdat.strftime('%F')
+                context['edat'] = edat.strftime('%F')
+                context['pdat'] = pdat.strftime('%F')
 
                 context['pagination'] = Article.findtext('Pagination/MedlinePgn')
                 context['volume'] = Article.findtext('Journal/JournalIssue/Volume')
@@ -101,11 +101,8 @@ class Pubmed_XML_Parser(object):
                     mail = util.check_email(affiliation)
                     if mail:
                         author_mails.append(f'{fullname}:{mail}')
-
                 context['author_mails'] = author_mails
-
                 context['affiliations'] = list(set(Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')))
-
                 context['authors'] = author_list
 
                 context['pub_types'] = Article.xpath('PublicationTypeList/PublicationType/text()')
@@ -114,7 +111,7 @@ class Pubmed_XML_Parser(object):
                 context['pmc'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="pmc"]')
                 context['pii'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="pii"]')
 
-                ref_list = PubmedArticle.xpath('PubmedData/ReferenceList/Reference/ArticleIdList/ArticleId[@IdType="pubmed"]/text()')
-                context['references'] = ','.join(ref_list)
+                references = PubmedArticle.xpath('PubmedData/ReferenceList/Reference/ArticleIdList/ArticleId[@IdType="pubmed"]/text()')
+                context['references'] = ','.join(references)
 
                 yield ArticleObject(**context)
