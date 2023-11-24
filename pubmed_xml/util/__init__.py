@@ -54,6 +54,13 @@ def get_pubmed_xml(pmid):
 def check_date(element):
     year = element.findtext('Year')
     month = element.findtext('Month')
-    day = element.findtext('Day') or '1'
+    day = element.findtext('Day')
 
-    return parse_date(f'{year}-{month}-{day}')
+    if not month:
+        date = parse_date(year).strftime('%Y')
+    elif not day:
+        date = parse_date(f'{year}-{month}').strftime('%Y-%m')
+    else:
+        date = parse_date(f'{year}-{month}-{day}').strftime('%Y-%m-%d')
+
+    return date

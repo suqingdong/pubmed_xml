@@ -73,12 +73,9 @@ class Pubmed_XML_Parser(object):
                 # https://gist.github.com/suqingdong/ad5166618b386627c0fea079215d77bb
 
                 # convert to datetime
-                mdat = util.check_date(PubmedArticle.find('MedlineCitation/DateRevised'))
-                edat = util.check_date(PubmedArticle.find('PubmedData/History/PubMedPubDate[@PubStatus="pubmed"]'))
-                pdat = util.check_date(Article.find('ArticleDate') if Article.find('ArticleDate') is not None else Article.find('Journal/JournalIssue/PubDate'))
-                context['mdat'] = mdat.strftime('%F')
-                context['edat'] = edat.strftime('%F')
-                context['pdat'] = pdat.strftime('%F')
+                context['mdat'] = util.check_date(PubmedArticle.find('MedlineCitation/DateRevised'))
+                context['edat'] = util.check_date(PubmedArticle.find('PubmedData/History/PubMedPubDate[@PubStatus="pubmed"]'))
+                context['pdat'] = util.check_date(Article.find('ArticleDate') if Article.find('ArticleDate') is not None else Article.find('Journal/JournalIssue/PubDate'))
 
                 context['pagination'] = Article.findtext('Pagination/MedlinePgn')
                 context['volume'] = Article.findtext('Journal/JournalIssue/Volume')
