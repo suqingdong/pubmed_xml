@@ -83,15 +83,14 @@ def parse_tree(tree):
                     mail = '{}: {}'.format(author_name, mail[0])
                     author_mail.append(mail)
 
-            context['author_mail'] = '\n'.join(author_mail) or '.'
-            authors = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
-            context['author_first'] = context['author_last'] = '.'
-            if authors:
-                context['author_first'] = authors[0]
-                if len(authors) > 1:
-                    context['author_last'] = authors[-1]
+            context['author_mail'] = author_mail
 
-            context['authors'] = '\n'.join(author_list)
+            context['author_first'] = context['author_last'] = '.'
+            if author_list:
+                context['author_first'] = author_list[0]
+                context['author_last'] = author_list[-1]
+
+            context['authors'] = author_list
 
             # affiliation list
             affiliations = Article.xpath('AuthorList/Author/AffiliationInfo/Affiliation/text()')
@@ -101,10 +100,10 @@ def parse_tree(tree):
                 if aff not in affiliation_unique_list:
                     affiliation_unique_list.append(aff)
 
-            context['affiliations'] = '\n'.join((
+            context['affiliations'] = [
                 f'{n}. {aff} - {affiliation_author_map.get(aff)}' 
                 for n, aff in enumerate(affiliation_unique_list, 1)
-            ))
+            ]
 
             context['pub_types'] = Article.xpath('PublicationTypeList/PublicationType/text()')
             context['doi'] = PubmedArticle.findtext('PubmedData/ArticleIdList/ArticleId[@IdType="doi"]')
